@@ -370,17 +370,22 @@ public abstract class ReconParticleDriver extends Driver {
      */
     @Override
     protected void detectorChanged(Detector detector) {
+
         BeamEnergyCollection beamEnergyCollection = 
                 this.getConditionsManager().getCachedConditions(BeamEnergyCollection.class, "beam_energies").getCachedData();
         beamEnergy = beamEnergyCollection.get(0).getBeamEnergy();
+
         if (clusterParamFileName == null) {
             if (beamEnergy > 2)
                 setClusterParamFileName("ClusterParameterization2016.dat");
             else
                 setClusterParamFileName("ClusterParameterization2015.dat");
         }
+
         matcher = new TrackClusterMatcher(clusterParamFileName);
         matcher.enablePlots(enableTrackClusterMatchPlots);
+        matcher.setBeamEnergy(beamEnergy); 
+        matcher.setBFieldMap(detector.getFieldMap());
 
         // Set the magnetic field parameters to the appropriate values.
         Hep3Vector ip = new BasicHep3Vector(0., 0., 500.0);
@@ -390,12 +395,6 @@ public abstract class ReconParticleDriver extends Driver {
         }
 
         ecal = (HPSEcal3) detector.getSubdetector("Ecal");
-        matcher.setBFieldMap(detector.getFieldMap());
-
-        BeamEnergyCollection beamEnergyCollection = 
-                this.getConditionsManager().getCachedConditions(BeamEnergyCollection.class, "beam_energies").getCachedData();        
-        beamEnergy = beamEnergyCollection.get(0).getBeamEnergy();
-        matcher.setBeamEnergy(beamEnergy); 
         
         if (cuts == null)
             cuts = new StandardCuts(beamEnergy);
